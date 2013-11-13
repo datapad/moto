@@ -38,7 +38,9 @@ class FakeKey(object):
 
     @property
     def metadata(self):
-        return self._metadata
+        return dict(self._metadata, **{
+            'content-length': str(self.size)
+        })
 
     @property
     def response_dict(self):
