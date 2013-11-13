@@ -132,11 +132,33 @@ class ResponseObject(object):
         if method == 'GET':
             key = self.backend.get_key(bucket_name, key_name)
             if key:
+                # HACKITY HACKFACE - just for datapad (in burrow)
+                if parsed_url.query == 'acl':
+                    return 200, headers, '''
+<AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+  <Owner>
+    <ID>owner-id</ID>
+    <DisplayName>owner-display-name</DisplayName>
+  </Owner>
+  <AccessControlList>
+    <Grant>
+      <Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:type="Canonical User">
+        <ID>grantee-id</ID>
+        <DisplayName>grantee-display-name</DisplayName>
+      </Grantee>
+      <Permission>FULL_CONTROL</Permission>
+    </Grant>
+  </AccessControlList>
+</AccessControlPolicy>
+                    '''
                 headers.update(key.metadata)
                 return 200, headers, key.value
             else:
                 return 404, headers, ""
         if method == 'PUT':
+            if parsed_url.query == 'acl':
+                return 200, headers, ''
             if 'x-amz-copy-source' in request.headers:
                 # Copy key
                 src_bucket, src_key = request.headers.get("x-amz-copy-source").split("/", 1)
